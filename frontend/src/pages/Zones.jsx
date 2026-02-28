@@ -110,6 +110,23 @@ function ZoneRankingPanel({ clusters, workerCluster }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
+//  MapAutoPan — Pans the map to the user's location once when found
+// ══════════════════════════════════════════════════════════════════
+function MapAutoPan({ location, isTracking }) {
+    const map = useMap();
+    const [hasPanned, setHasPanned] = useState(false);
+
+    useEffect(() => {
+        if (map && isTracking && location && !hasPanned) {
+            map.panTo({ lat: location.lat, lng: location.lng });
+            setHasPanned(true);
+        }
+    }, [map, location, isTracking, hasPanned]);
+
+    return null;
+}
+
+// ══════════════════════════════════════════════════════════════════
 //  Zones Page
 // ══════════════════════════════════════════════════════════════════
 const Zones = () => {
@@ -209,7 +226,7 @@ const Zones = () => {
                             <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold text-white ${DEMAND_COLORS[selectedCluster.demand_level]?.badge}`}>
                                 {selectedCluster.demand_level.toUpperCase()}
                             </span>
-                            <span className="text-xs text-gigpay-text-muted">Zone #{selectedCluster.cluster_id + 1}</span>
+                            <span className="text-xs text-gigpay-text-muted">Zone #${selectedCluster.cluster_id + 1}</span>
                         </div>
                         <button onClick={() => setSelectedCluster(null)} className="text-gigpay-text-muted text-sm">✕</button>
                     </div>
@@ -241,7 +258,6 @@ const Zones = () => {
                         <Map
                             defaultZoom={12}
                             defaultCenter={DEFAULT_CENTER}
-                            center={isTracking && location ? mapCenter : undefined}
                             mapId="gigpay_zones_map"
                             gestureHandling="greedy"
                             zoomControl={true}
@@ -249,6 +265,7 @@ const Zones = () => {
                             streetViewControl={false}
                             mapTypeControl={false}
                         >
+                            <MapAutoPan location={location} isTracking={isTracking} />
                             {/* Cluster circles */}
                             {clusters.map(c => (
                                 <ZoneCircle key={c.cluster_id} cluster={c} onClick={handleCircleClick} />
